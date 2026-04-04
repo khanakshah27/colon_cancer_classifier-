@@ -2,7 +2,7 @@ import pandas as pd
 from sklearn.preprocessing import StandardScaler
 
 def preprocess_data(data):
-    # Extract patient_id and label before dropping
+ 
     patient_ids = data['patient_id'] if 'patient_id' in data.columns else None
     
     numeric = data.drop(columns=[c for c in ['label', 'patient_id'] if c in data.columns])
