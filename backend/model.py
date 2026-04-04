@@ -28,12 +28,11 @@ def train_models(X, y, groups):
         X_tr, X_te = X[train_idx], X[test_idx]
         y_tr, y_te = y.iloc[train_idx], y.iloc[test_idx]
 
-        # Scale on train only
+   
         scaler = StandardScaler()
         X_tr_s = scaler.fit_transform(X_tr)
         X_te_s = scaler.transform(X_te)
 
-        # Feature selection on train only
         vt = VarianceThreshold(threshold=0.1)
         X_tr_v = vt.fit_transform(X_tr_s)
         X_te_v = vt.transform(X_te_s)
@@ -43,13 +42,11 @@ def train_models(X, y, groups):
         X_tr_f = sel.fit_transform(X_tr_v, y_tr)
         X_te_f = sel.transform(X_te_v)
 
-        # SVM
         svm = SVC(kernel='linear', C=0.1, probability=True)
         svm.fit(X_tr_f, y_tr)
         svm_preds[test_idx] = svm.predict(X_te_f)
         svm_probs[test_idx] = svm.predict_proba(X_te_f)[:, 1]
 
-        # RF
         rf = RandomForestClassifier(n_estimators=100, max_depth=3, min_samples_leaf=5, random_state=42)
         rf.fit(X_tr_f, y_tr)
         rf_preds[test_idx] = rf.predict(X_te_f)
@@ -63,7 +60,6 @@ def train_models(X, y, groups):
     print(f"LOPO SVM accuracy: {svm_acc:.4f}")
     print(f"LOPO RF  accuracy: {rf_acc:.4f}")
 
-    # Train a final model on ALL data for the classify endpoint
     scaler_final = StandardScaler()
     X_s = scaler_final.fit_transform(X)
     vt_final = VarianceThreshold(threshold=0.1)
@@ -80,7 +76,7 @@ def train_models(X, y, groups):
         "svm_preds":    svm_preds,
         "rf_preds":     rf_preds,
         "y":            y,
-        # Final model for classify endpoint
+   
         "scaler":       scaler_final,
         "vt":           vt_final,
         "selector":     sel_final,
