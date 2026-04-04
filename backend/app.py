@@ -21,7 +21,7 @@ def run_pipeline_api():
         X, y, feature_names, patient_ids = preprocess_data(data)
 
         import pandas as pd
-        groups = pd.factorize(patient_ids)[0]  # encode patient IDs as integers
+        groups = pd.factorize(patient_ids)[0]  
 
         results = train_models(X, y, groups)
 
