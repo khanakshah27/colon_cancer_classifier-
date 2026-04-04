@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CancerScan — Colon Cancer Classifier</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="bg-grid"></div>
+    <div class="bg-glow"></div>
+
+    <main>
+        <header>
+            <div class="badge">GENE EXPRESSION ANALYSIS</div>
+            <h1>Colon Cancer<br><span>Classifier</span></h1>
+            <p class="subtitle">SVM + Random Forest · 49k microarray features </p>
+        </header>
+
+        <section class="card" id="pipeline-card">
+            <div class="card-label">PIPELINE</div>
+            <h2>Run Full Analysis</h2>
+            <p>Train models on GEO dataset and evaluate classification performance across 196 samples.</p>
+            <button id="run-btn" onclick="runPipeline()">
+                <span class="btn-text">Run Analysis</span>
+                <span class="btn-icon">→</span>
+            </button>
+            <div id="pipeline-output" class="hidden">
+                <div class="divider"></div>
+                <div class="metrics-grid">
+                    <div class="metric">
+                        <div class="metric-label">SVM Accuracy</div>
+                        <div class="metric-value" id="svm-acc">—</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-label">Random Forest</div>
+                        <div class="metric-value" id="rf-acc">—</div>
+                    </div>
+                    <div class="metric small">
+                        <div class="metric-label">Samples</div>
+                        <div class="metric-value" id="samples">—</div>
+                    </div>
+                    <div class="metric small">
+                        <div class="metric-label">Raw Features</div>
+                        <div class="metric-value" id="features">—</div>
+                    </div>
+                    <div class="metric small">
+                        <div class="metric-label">Selected</div>
+                        <div class="metric-value" id="selected">—</div>
+                    </div>
+                </div>
+            </div>
+            <div id="pipeline-error" class="error-msg hidden"></div>
+        </section>
+
+        <section class="card" id="classify-card">
+            <div class="card-label">CLASSIFY SAMPLE</div>
+            <h2>Single Sample Prediction</h2>
+            <p>Paste comma-separated gene expression values (must match 49,386 features). Or load a random test sample.</p>
+            <div class="input-row">
+                <button class="btn-secondary" onclick="loadRandomSample()">Load Random Sample</button>
+                <button class="btn-secondary" onclick="clearSample()">Clear</button>
+            </div>
+            <textarea id="sample-input" placeholder="Paste gene expression values here, comma-separated...&#10;e.g. 5.23, 3.11, 8.44, ..."></textarea>
+            <button id="classify-btn" onclick="classifySample()">
+                <span class="btn-text">Classify Sample</span>
+                <span class="btn-icon">→</span>
+            </button>
+            <div id="classify-output" class="hidden">
+                <div class="divider"></div>
+                <div class="result-box" id="result-box">
+                    <div class="result-icon" id="result-icon">●</div>
+                    <div class="result-label" id="result-label">—</div>
+                    <div class="result-conf" id="result-conf">—</div>
+                </div>
+            </div>
+            <div id="classify-error" class="error-msg hidden"></div>
+        </section>
+    </main>
+
+    <script src="script.js"></script>
+</body>
+</html>
