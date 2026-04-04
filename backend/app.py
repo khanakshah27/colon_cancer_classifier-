@@ -3,7 +3,10 @@ from flask_cors import CORS
 from data_loader import load_data
 from preprocessing import preprocess_data
 from model import train_models
+from visualization import plot_pca, plot_roc
+from sklearn.decomposition import PCA
 import numpy as np
+import pandas as pd
 
 app = Flask(__name__)
 CORS(app)
@@ -19,10 +22,7 @@ def run_pipeline_api():
     try:
         data = load_data()
         X, y, feature_names, patient_ids = preprocess_data(data)
-
-        import pandas as pd
-        groups = pd.factorize(patient_ids)[0]  
-
+        groups = pd.factorize(patient_ids)[0]
         results = train_models(X, y, groups)
 
         _state["results"] = results
@@ -37,6 +37,33 @@ def run_pipeline_api():
             "selected_features": int(results["selected_idx"].shape[0]),
             "cv_method":         "Leave-One-Patient-Out"
         })
+
+    except Exception as e:
+        import traceback; traceback.print_exc()
+        return jsonify({"error": str(e)})
+
+
+@app.route("/plots", methods=["GET"])
+def get_plots():
+    try:
+        if "results" not in _state:
+            return jsonify({"error": "Run the pipeline first."})
+
+        r = _state["results"]
+        X = _state["X_raw"]
+        y = _state["y"]
+
+        X_s = r["scaler"].transform(X)
+        X_v = r["vt"].transform(X_s)
+        X_f = r["selector"].transform(X_v)
+
+        pca = PCA(n_components=2)
+        X_pca = pca.fit_transform(X_f)
+
+        pca_img = plot_pca(X_pca, y)
+        roc_img = plot_roc(r["svm_final"], X_f, y)
+
+        return jsonify({"pca": pca_img, "roc": roc_img})
 
     except Exception as e:
         import traceback; traceback.print_exc()
