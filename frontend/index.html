@@ -16,13 +16,13 @@
         <header>
             <div class="badge">GENE EXPRESSION ANALYSIS</div>
             <h1>Colon Cancer<br><span>Classifier</span></h1>
-            <p class="subtitle">SVM + Random Forest · 49k microarray features </p>
+            <p class="subtitle">SVM + Random Forest · 49k microarray features · GSE44076 · Leave-One-Patient-Out CV</p>
         </header>
 
-        <section class="card" id="pipeline-card">
+        <section class="card">
             <div class="card-label">PIPELINE</div>
             <h2>Run Full Analysis</h2>
-            <p>Train models on GEO dataset and evaluate classification performance across 196 samples.</p>
+            <p>Train models on GEO dataset and evaluate classification performance across 196 matched samples.</p>
             <button id="run-btn" onclick="runPipeline()">
                 <span class="btn-text">Run Analysis</span>
                 <span class="btn-icon">→</span>
@@ -51,19 +51,38 @@
                         <div class="metric-value" id="selected">—</div>
                     </div>
                 </div>
+
+                <div class="divider"></div>
+                <div class="plots-header">
+                    <div class="card-label">VISUALISATIONS</div>
+                    <button class="btn-secondary" id="load-plots-btn" onclick="loadPlots()">Load Plots</button>
+                </div>
+                <div id="plots-output" class="hidden">
+                    <div class="plots-grid">
+                        <div class="plot-box">
+                            <div class="plot-title">PCA — Normal vs Tumor</div>
+                            <img id="pca-img" src="" alt="PCA Plot"/>
+                        </div>
+                        <div class="plot-box">
+                            <div class="plot-title">ROC Curve (SVM)</div>
+                            <img id="roc-img" src="" alt="ROC Curve"/>
+                        </div>
+                    </div>
+                </div>
+                <div id="plots-error" class="error-msg hidden"></div>
             </div>
             <div id="pipeline-error" class="error-msg hidden"></div>
         </section>
 
-        <section class="card" id="classify-card">
+        <section class="card">
             <div class="card-label">CLASSIFY SAMPLE</div>
             <h2>Single Sample Prediction</h2>
-            <p>Paste comma-separated gene expression values (must match 49,386 features). Or load a random test sample.</p>
+            <p>Load a random sample from the dataset and classify it using the trained SVM model.</p>
             <div class="input-row">
                 <button class="btn-secondary" onclick="loadRandomSample()">Load Random Sample</button>
                 <button class="btn-secondary" onclick="clearSample()">Clear</button>
             </div>
-            <textarea id="sample-input" placeholder="Paste gene expression values here, comma-separated...&#10;e.g. 5.23, 3.11, 8.44, ..."></textarea>
+            <textarea id="sample-input" placeholder="Paste gene expression values here, comma-separated...&#10;Or click 'Load Random Sample' above."></textarea>
             <button id="classify-btn" onclick="classifySample()">
                 <span class="btn-text">Classify Sample</span>
                 <span class="btn-icon">→</span>
@@ -72,7 +91,10 @@
                 <div class="divider"></div>
                 <div class="result-box" id="result-box">
                     <div class="result-icon" id="result-icon">●</div>
-                    <div class="result-label" id="result-label">—</div>
+                    <div class="result-content">
+                        <div class="result-label" id="result-label">—</div>
+                        <div class="result-desc" id="result-desc">—</div>
+                    </div>
                     <div class="result-conf" id="result-conf">—</div>
                 </div>
             </div>
