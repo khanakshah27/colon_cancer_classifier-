@@ -25,7 +25,6 @@ def load_data(gse_id="GSE44076", destdir="./data"):
         source = " ".join(gsm.metadata.get('source_name_ch1', [])).lower()
         chars  = " ".join(gsm.metadata.get('characteristics_ch1', [])).lower()
 
-        # Extract patient ID from characteristics e.g. "individual id: a2004"
         match = re.search(r'individual id:\s*(\S+)', chars)
         patient_id = match.group(1) if match else "unknown"
 
@@ -37,7 +36,7 @@ def load_data(gse_id="GSE44076", destdir="./data"):
             labels.append(1)
             kept.append(sample)
             patient_ids.append(patient_id)
-        # drop unmatched healthy donors
+
 
     data = data.loc[kept].copy()
     data['label'] = labels
