@@ -1,25 +1,21 @@
-from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
-from sklearn.model_selection import cross_val_score, StratifiedKFold
-from collections import Counter
+from sklearn.metrics import (
+    accuracy_score, classification_report,
+    confusion_matrix, roc_auc_score
+)
+import numpy as np
 
-def evaluate_models(results, X, y):
-    X_test = results["X_test"]
-    y_test = results["y_test"]
+def evaluate_models(results):
+    y_true = results["y"]
+    svm_preds = results["svm_preds"]
+    rf_preds  = results["rf_preds"]
 
-    print("\n========== MODEL EVALUATION ==========\n")
+    print("\n========== MODEL EVALUATION (Leave-One-Patient-Out) ==========\n")
 
-    class_counts = Counter(y)
-    cv_folds = max(2, min(5, min(class_counts.values())))
-    print(f"Using {cv_folds}-fold Stratified Cross Validation\n")
-    skf = StratifiedKFold(n_splits=cv_folds, shuffle=True, random_state=42)
+    for name, preds in [("SVM", svm_preds), ("Random Forest", rf_preds)]:
+        print(f"----- {name} -----")
+        print(f"Accuracy:          {accuracy_score(y_true, preds):.4f}")
+        print(f"ROC-AUC:           {roc_auc_score(y_true, preds):.4f}")
+        print(f"Confusion Matrix:\n{confusion_matrix(y_true, preds)}")
+        print(f"Classification Report:\n{classification_report(y_true, preds, target_names=['Normal','Tumor'])}")
 
-    for name in ["svm", "rf"]:
-        model, y_pred = results[name]
-        print(f"\n----- {name.upper()} -----")
-        print("Test Accuracy:", round(accuracy_score(y_test, y_pred), 4))
-        print("Confusion Matrix:\n", confusion_matrix(y_test, y_pred))
-        print("Classification Report:\n", classification_report(y_test, y_pred))
-        cv_scores = cross_val_score(model, X, y, cv=skf)
-        print("Cross-Validation Accuracy:", round(cv_scores.mean(), 4))
-
-    print("\n=====================================\n")
+    print("==============================================================\n")
