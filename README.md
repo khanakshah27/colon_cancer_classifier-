@@ -1,4 +1,4 @@
-# 🧬 CancerScan — Colon Cancer Classifier
+# 🧬  Colon Cancer Classifier
 
 A full-stack machine learning web application that classifies colon tissue samples as **normal** or **cancerous (tumor)** using gene expression microarray data from the GEO public database.
 
