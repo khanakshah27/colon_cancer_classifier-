@@ -153,6 +153,63 @@ This runs the full pipeline and prints results to the terminal.
 
 ---
 
+## 🍎 Notes for macOS Users
+
+### Use `python3` and `pip3`
+
+macOS may have both Python 2 and Python 3 installed. Use `python3` and `pip3` explicitly to avoid conflicts:
+
+```bash
+pip3 install GEOparse pandas numpy scikit-learn matplotlib seaborn xgboost flask flask-cors
+python3 app.py
+```
+
+### Port 5000 Conflict (macOS Monterey and later)
+
+macOS Monterey+ reserves port 5000 for AirPlay Receiver. If Flask fails to start with `Address already in use`, either:
+
+- **Disable AirPlay Receiver**: System Settings → General → AirDrop & Handoff → uncheck AirPlay Receiver
+
+- **Or change Flask's port** in `app.py`:
+  ```python
+  # Change the last line of app.py from:
+  app.run(debug=True)
+  # To:
+  app.run(debug=True, port=5001)
+  ```
+  Then update `script.js` to point to `http://127.0.0.1:5001`.
+
+### Matplotlib Backend Fix
+
+On macOS, `matplotlib` may crash when running inside Flask with errors like `NSInternalInconsistencyException`. Fix this by adding the following to the top of `visualization.py`, **before** any other matplotlib imports:
+
+```python
+import matplotlib
+matplotlib.use('Agg')  # non-interactive backend required on macOS with Flask
+import matplotlib.pyplot as plt
+```
+
+### SSL Certificate Error (GEOparse Download Fails)
+
+If `GEOparse` fails to download the dataset with an SSL error, run the macOS certificate installer:
+
+```bash
+# Adjust the Python version number to match yours
+/Applications/Python\ 3.11/Install\ Certificates.command
+```
+
+### Opening the Frontend
+
+On macOS you can open the frontend directly from the terminal:
+
+```bash
+open frontend/index.html
+```
+
+---
+
+
+
 ## 🔑 Key Design Decisions & Why
 
 ### Why Leave-One-Patient-Out CV?
@@ -218,3 +275,7 @@ xgboost        # (imported but not used in current version — available for ext
 - Display which top 20 genes were selected and their biological significance
 - Add SHAP or feature importance explainability
 - Add a loading progress bar (the ~2-minute wait has no server-side progress events currently)
+
+
+
+
