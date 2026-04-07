@@ -3,6 +3,7 @@ from flask_cors import CORS
 from data_loader import load_data
 from preprocessing import preprocess_data
 from model import train_models
+from evaluation import evaluate_models
 from visualization import plot_pca, plot_roc
 from sklearn.decomposition import PCA
 import numpy as np
@@ -24,6 +25,7 @@ def run_pipeline_api():
         X, y, feature_names, patient_ids = preprocess_data(data)
         groups = pd.factorize(patient_ids)[0]
         results = train_models(X, y, groups)
+        evaluate_models(results)  # prints to terminal
 
         _state["results"] = results
         _state["X_raw"]   = X
@@ -53,6 +55,7 @@ def get_plots():
         X = _state["X_raw"]
         y = _state["y"]
 
+        # PCA on selected features using final model's pipeline
         X_s = r["scaler"].transform(X)
         X_v = r["vt"].transform(X_s)
         X_f = r["selector"].transform(X_v)
