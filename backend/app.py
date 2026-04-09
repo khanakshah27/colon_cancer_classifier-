@@ -4,7 +4,7 @@ from data_loader import load_data
 from preprocessing import preprocess_data
 from model import train_models
 from evaluation import evaluate_models
-from visualization import plot_pca, plot_roc
+from visualization import plot_pca, plot_roc, plot_volcano, plot_heatmap, plot_go_enrichment, plot_kegg_enrichment
 from sklearn.decomposition import PCA
 import numpy as np
 import pandas as pd
@@ -25,11 +25,12 @@ def run_pipeline_api():
         X, y, feature_names, patient_ids = preprocess_data(data)
         groups = pd.factorize(patient_ids)[0]
         results = train_models(X, y, groups)
-        evaluate_models(results)  # prints to terminal
+        evaluate_models(results)
 
-        _state["results"] = results
-        _state["X_raw"]   = X
-        _state["y"]       = y
+        _state["results"]      = results
+        _state["X_raw"]        = X
+        _state["y"]            = y
+        _state["feature_names"] = feature_names
 
         return jsonify({
             "svm_accuracy":      round(float(results["svm_acc"]), 4),
@@ -51,22 +52,53 @@ def get_plots():
         if "results" not in _state:
             return jsonify({"error": "Run the pipeline first."})
 
-        r = _state["results"]
-        X = _state["X_raw"]
-        y = _state["y"]
+        r  = _state["results"]
+        X  = _state["X_raw"]
+        y  = _state["y"]
 
-        # PCA on selected features using final model's pipeline
+        X_s   = r["scaler"].transform(X)
+        X_v   = r["vt"].transform(X_s)
+        X_f   = r["selector"].transform(X_v)
+
+        pca     = PCA(n_components=2)
+        X_pca   = pca.fit_transform(X_f)
+
+        return jsonify({
+            "pca": plot_pca(X_pca, y),
+            "roc": plot_roc(r["svm_final"], X_f, y),
+        })
+
+    except Exception as e:
+        import traceback; traceback.print_exc()
+        return jsonify({"error": str(e)})
+
+
+@app.route("/plots/all", methods=["GET"])
+def get_all_plots():
+    try:
+        if "results" not in _state:
+            return jsonify({"error": "Run the pipeline first."})
+
+        r  = _state["results"]
+        X  = _state["X_raw"]
+        y  = _state["y"]
+        fn = _state.get("feature_names")
+
         X_s = r["scaler"].transform(X)
         X_v = r["vt"].transform(X_s)
         X_f = r["selector"].transform(X_v)
 
-        pca = PCA(n_components=2)
+        pca   = PCA(n_components=2)
         X_pca = pca.fit_transform(X_f)
 
-        pca_img = plot_pca(X_pca, y)
-        roc_img = plot_roc(r["svm_final"], X_f, y)
-
-        return jsonify({"pca": pca_img, "roc": roc_img})
+        return jsonify({
+            "pca":      plot_pca(X_pca, y),
+            "roc":      plot_roc(r["svm_final"], X_f, y),
+            "volcano":  plot_volcano(X_f, y, fn),
+            "heatmap":  plot_heatmap(X_f, y, fn),
+            "go":       plot_go_enrichment(X_f, y),
+            "kegg":     plot_kegg_enrichment(X_f, y),
+        })
 
     except Exception as e:
         import traceback; traceback.print_exc()
@@ -78,7 +110,7 @@ def random_sample():
     try:
         if "X_raw" not in _state:
             return jsonify({"error": "Run the pipeline first."})
-        X = _state["X_raw"]
+        X   = _state["X_raw"]
         idx = np.random.randint(0, len(X))
         return jsonify({"values": X[idx].tolist(), "index": int(idx)})
     except Exception as e:
