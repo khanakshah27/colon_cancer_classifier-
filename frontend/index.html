@@ -11,14 +11,14 @@
 <body>
     <div class="bg-grid"></div>
     <div class="bg-glow"></div>
-
     <main>
         <header>
             <div class="badge">GENE EXPRESSION ANALYSIS</div>
             <h1>Colon Cancer<br><span>Classifier</span></h1>
-            <p class="subtitle">SVM + Random Forest · 49k microarray features </p>
+            <p class="subtitle">SVM + Random Forest · 49k microarray features · GSE44076 · Leave-One-Patient-Out CV</p>
         </header>
 
+        <!-- Pipeline -->
         <section class="card">
             <div class="card-label">PIPELINE</div>
             <h2>Run Full Analysis</h2>
@@ -51,29 +51,27 @@
                         <div class="metric-value" id="selected">—</div>
                     </div>
                 </div>
-
-                <div class="divider"></div>
-                <div class="plots-header">
-                    <div class="card-label">VISUALISATIONS</div>
-                    <button class="btn-secondary" id="load-plots-btn" onclick="loadPlots()">Load Plots</button>
-                </div>
-                <div id="plots-output" class="hidden">
-                    <div class="plots-grid">
-                        <div class="plot-box">
-                            <div class="plot-title">PCA — Normal vs Tumor</div>
-                            <img id="pca-img" src="" alt="PCA Plot"/>
-                        </div>
-                        <div class="plot-box">
-                            <div class="plot-title">ROC Curve (SVM)</div>
-                            <img id="roc-img" src="" alt="ROC Curve"/>
-                        </div>
-                    </div>
-                </div>
-                <div id="plots-error" class="error-msg hidden"></div>
             </div>
             <div id="pipeline-error" class="error-msg hidden"></div>
         </section>
 
+        <!-- Plots -->
+        <section class="card">
+            <div class="card-label">VISUALISATIONS</div>
+            <h2>Analysis Plots</h2>
+            <p>PCA, ROC curve, Volcano plot, Heatmap, GO enrichment and KEGG pathway analysis.</p>
+            <button id="load-plots-btn" onclick="loadAllPlots()">
+                <span class="btn-text">Generate All Plots</span>
+                <span class="btn-icon">→</span>
+            </button>
+            <div id="plots-output" class="hidden">
+                <div class="divider"></div>
+                <div class="plots-grid" id="plots-grid"></div>
+            </div>
+            <div id="plots-error" class="error-msg hidden"></div>
+        </section>
+
+        <!-- Classify -->
         <section class="card">
             <div class="card-label">CLASSIFY SAMPLE</div>
             <h2>Single Sample Prediction</h2>
@@ -93,7 +91,7 @@
                     <div class="result-icon" id="result-icon">●</div>
                     <div class="result-content">
                         <div class="result-label" id="result-label">—</div>
-                        <div class="result-desc" id="result-desc">—</div>
+                        <div class="result-desc"  id="result-desc">—</div>
                     </div>
                     <div class="result-conf" id="result-conf">—</div>
                 </div>
@@ -101,7 +99,6 @@
             <div id="classify-error" class="error-msg hidden"></div>
         </section>
     </main>
-
     <script src="script.js"></script>
 </body>
 </html>
