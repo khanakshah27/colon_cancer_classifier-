@@ -1,0 +1,766 @@
+
+R version 4.5.3 (2026-03-11) -- "Reassured Reassurer"
+Copyright (C) 2026 The R Foundation for Statistical Computing
+Platform: aarch64-apple-darwin20
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+  Natural language support but running in an English locale
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+[R.app GUI 1.82 (8587) aarch64-apple-darwin20]
+
+[Workspace restored from /Users/khanakshah/.RData]
+[History restored from /Users/khanakshah/.Rapp.history]
+
+> # ============================================================
+> #  Colon Cancer Microarray Analysis — GSE44076
+> #  Plots: Volcano, Heatmap, GO Enrichment, KEGG, PCA, ROC
+> # ============================================================
+> 
+> # ---- 1. Install & load packages ----------------------------
+> packages <- c("GEOquery", "limma", "pheatmap", "ggplot2",
++               "ggrepel", "clusterProfiler", "org.Hs.eg.db",
++               "enrichplot", "pROC", "dplyr", "RColorBrewer")
+> 
+> if (!requireNamespace("BiocManager", quietly = TRUE))
++   install.packages("BiocManager")
+--- Please select a CRAN mirror for use in this session ---
+trying URL 'https://cran.asia/bin/macosx/big-sur-arm64/contrib/4.5/BiocManager_1.30.27.tgz'
+Content type 'application/octet-stream' length 660755 bytes (645 KB)
+==================================================
+downloaded 645 KB
+
+
+The downloaded binary packages are in
+	/var/folders/gc/rtdv9ryn6fq_tw1j1f6ytw8m0000gp/T//RtmpzE36Rl/downloaded_packages
+> 
+> for (pkg in packages) {
++   if (!requireNamespace(pkg, quietly = TRUE))
++     BiocManager::install(pkg, ask = FALSE)
++ }
+'getOption("repos")' replaces Bioconductor standard repositories, see
+'help("repositories", package = "BiocManager")' for details.
+Replacement repositories:
+    CRAN: https://cran.asia
+Bioconductor version 3.22 (BiocManager 1.30.27), R 4.5.3 (2026-03-11)
+Installing package(s) 'BiocVersion', 'GEOquery'
+also installing the dependencies ‘bit’, ‘prettyunits’, ‘XVector’, ‘sys’, ‘pkgconfig’, ‘bit64’, ‘progress’, ‘utf8’, ‘mime’, ‘matrixStats’, ‘abind’, ‘SparseArray’, ‘askpass’, ‘BiocGenerics’, ‘cli’, ‘clipr’, ‘crayon’, ‘glue’, ‘hms’, ‘lifecycle’, ‘R6’, ‘rlang’, ‘tibble’, ‘vroom’, ‘withr’, ‘cpp11’, ‘tzdb’, ‘generics’, ‘pillar’, ‘tidyselect’, ‘vctrs’, ‘purrr’, ‘statmod’, ‘XML’, ‘httr’, ‘jsonlite’, ‘R.oo’, ‘R.methodsS3’, ‘stringi’, ‘MatrixGenerics’, ‘GenomicRanges’, ‘IRanges’, ‘Seqinfo’, ‘S4Arrays’, ‘DelayedArray’, ‘selectr’, ‘openssl’, ‘rappdirs’, ‘Biobase’, ‘readr’, ‘xml2’, ‘dplyr’, ‘data.table’, ‘tidyr’, ‘magrittr’, ‘limma’, ‘curl’, ‘rentrez’, ‘R.utils’, ‘stringr’, ‘SummarizedExperiment’, ‘S4Vectors’, ‘rvest’, ‘httr2’
+
+trying URL 'https://cran.asia/bin/macosx/big-sur-arm64/contrib/4.5/bit_4.6.0.tgz'
+trying URL 'https://cran.asia/bin/macosx/big-sur-arm64/contrib/4.5/prettyunits_1.2.0.tgz'
+trying URL 'https://bioconductor.org/packages/3.22/bioc/bin/macosx/big-sur-arm64/contrib/4.5/XVector_0.50.0.tgz'
+trying URL 'https://cran.asia/bin/macosx/big-sur-arm64/contrib/4.5/sys_3.4.3.tgz'
+trying URL 'https://cran.asia/bin/macosx/big-sur-arm64/contrib/4.5/pkgconfig_2.0.3.tgz'
+trying URL 'https://cran.asia/bin/macosx/big-sur-arm64/contrib/4.5/bit64_4.6.0-1.tgz'
+trying URL 'https://cran.asia/bin/macosx/big-sur-arm64/contrib/4.5/progress_1.2.3.tgz'
+trying URL 'https://cran.asia/bin/macosx/big-sur-arm64/contrib/4.5/utf8_1.2.6.tgz'
+trying URL 'https://cran.asia/bin/macosx/big-sur-arm64/contrib/4.5/mime_0.13.tgz'
+trying URL 'https://cran.asia/bin/macosx/big-sur-arm64/contrib/4.5/matrixStats_1.5.0.tgz'
+trying URL 'https://cran.asia/bin/macosx/big-sur-arm64/contrib/4.5/abind_1.4-8.tgz'
+trying URL 'https://bioconductor.org/packages/3.22/bioc/bin/macosx/big-sur-arm64/contrib/4.5/SparseArray_1.10.10.tgz'
+trying URL 'https://cran.asia/bin/macosx/big-sur-arm64/contrib/4.5/askpass_1.2.1.tgz'
+trying URL 'https://bioconductor.org/packages/3.22/bioc/bin/macosx/big-sur-arm64/contrib/4.5/BiocGenerics_0.56.0.tgz'
+trying URL 'https://cran.asia/bin/macosx/big-sur-arm64/contrib/4.5/cli_3.6.6.tgz'
+trying URL 'https://cran.asia/bin/macosx/big-sur-arm64/contrib/4.5/clipr_0.8.0.tgz'
+trying URL 'https://cran.asia/bin/macosx/big-sur-arm64/contrib/4.5/crayon_1.5.3.tgz'
+trying URL 'https://cran.asia/bin/macosx/big-sur-arm64/contrib/4.5/glue_1.8.0.tgz'
+trying URL 'https://cran.asia/bin/macosx/big-sur-arm64/contrib/4.5/hms_1.1.4.tgz'
+trying URL 'https://cran.asia/bin/macosx/big-sur-arm64/contrib/4.5/lifecycle_1.0.5.tgz'
+trying URL 'https://cran.asia/bin/macosx/big-sur-arm64/contrib/4.5/R6_2.6.1.tgz'
+trying URL 'https://cran.asia/bin/macosx/big-sur-arm64/contrib/4.5/rlang_1.2.0.tgz'
+trying URL 'https://cran.asia/bin/macosx/big-sur-arm64/contrib/4.5/tibble_3.3.1.tgz'
+trying URL 'https://cran.asia/bin/macosx/big-sur-arm64/contrib/4.5/vroom_1.7.1.tgz'
+trying URL 'https://cran.asia/bin/macosx/big-sur-arm64/contrib/4.5/withr_3.0.2.tgz'
+trying URL 'https://cran.asia/bin/macosx/big-sur-arm64/contrib/4.5/cpp11_0.5.4.tgz'
+trying URL 'https://cran.asia/bin/macosx/big-sur-arm64/contrib/4.5/tzdb_0.5.0.tgz'
+trying URL 'https://cran.asia/bin/macosx/big-sur-arm64/contrib/4.5/generics_0.1.4.tgz'
+trying URL 'https://cran.asia/bin/macosx/big-sur-arm64/contrib/4.5/pillar_1.11.1.tgz'
+trying URL 'https://cran.asia/bin/macosx/big-sur-arm64/contrib/4.5/tidyselect_1.2.1.tgz'
+trying URL 'https://cran.asia/bin/macosx/big-sur-arm64/contrib/4.5/vctrs_0.7.3.tgz'
+trying URL 'https://cran.asia/bin/macosx/big-sur-arm64/contrib/4.5/purrr_1.2.2.tgz'
+trying URL 'https://cran.asia/bin/macosx/big-sur-arm64/contrib/4.5/statmod_1.5.1.tgz'
+trying URL 'https://cran.asia/bin/macosx/big-sur-arm64/contrib/4.5/XML_3.99-0.23.tgz'
+trying URL 'https://cran.asia/bin/macosx/big-sur-arm64/contrib/4.5/httr_1.4.8.tgz'
+trying URL 'https://cran.asia/bin/macosx/big-sur-arm64/contrib/4.5/jsonlite_2.0.0.tgz'
+trying URL 'https://cran.asia/bin/macosx/big-sur-arm64/contrib/4.5/R.oo_1.27.1.tgz'
+trying URL 'https://cran.asia/bin/macosx/big-sur-arm64/contrib/4.5/R.methodsS3_1.8.2.tgz'
+trying URL 'https://cran.asia/bin/macosx/big-sur-arm64/contrib/4.5/stringi_1.8.7.tgz'
+trying URL 'https://bioconductor.org/packages/3.22/bioc/bin/macosx/big-sur-arm64/contrib/4.5/MatrixGenerics_1.22.0.tgz'
+trying URL 'https://bioconductor.org/packages/3.22/bioc/bin/macosx/big-sur-arm64/contrib/4.5/GenomicRanges_1.62.1.tgz'
+trying URL 'https://bioconductor.org/packages/3.22/bioc/bin/macosx/big-sur-arm64/contrib/4.5/IRanges_2.44.0.tgz'
+trying URL 'https://bioconductor.org/packages/3.22/bioc/bin/macosx/big-sur-arm64/contrib/4.5/Seqinfo_1.0.0.tgz'
+trying URL 'https://bioconductor.org/packages/3.22/bioc/bin/macosx/big-sur-arm64/contrib/4.5/S4Arrays_1.10.1.tgz'
+trying URL 'https://bioconductor.org/packages/3.22/bioc/bin/macosx/big-sur-arm64/contrib/4.5/DelayedArray_0.36.1.tgz'
+trying URL 'https://cran.asia/bin/macosx/big-sur-arm64/contrib/4.5/selectr_0.5-1.tgz'
+trying URL 'https://cran.asia/bin/macosx/big-sur-arm64/contrib/4.5/openssl_2.3.5.tgz'
+trying URL 'https://cran.asia/bin/macosx/big-sur-arm64/contrib/4.5/rappdirs_0.3.4.tgz'
+trying URL 'https://bioconductor.org/packages/3.22/bioc/bin/macosx/big-sur-arm64/contrib/4.5/Biobase_2.70.0.tgz'
+trying URL 'https://cran.asia/bin/macosx/big-sur-arm64/contrib/4.5/readr_2.2.0.tgz'
+trying URL 'https://cran.asia/bin/macosx/big-sur-arm64/contrib/4.5/xml2_1.5.2.tgz'
+trying URL 'https://cran.asia/bin/macosx/big-sur-arm64/contrib/4.5/dplyr_1.2.1.tgz'
+trying URL 'https://cran.asia/bin/macosx/big-sur-arm64/contrib/4.5/data.table_1.18.2.1.tgz'
+trying URL 'https://cran.asia/bin/macosx/big-sur-arm64/contrib/4.5/tidyr_1.3.2.tgz'
+trying URL 'https://cran.asia/bin/macosx/big-sur-arm64/contrib/4.5/magrittr_2.0.5.tgz'
+trying URL 'https://bioconductor.org/packages/3.22/bioc/bin/macosx/big-sur-arm64/contrib/4.5/limma_3.66.0.tgz'
+trying URL 'https://cran.asia/bin/macosx/big-sur-arm64/contrib/4.5/curl_7.0.0.tgz'
+trying URL 'https://cran.asia/bin/macosx/big-sur-arm64/contrib/4.5/rentrez_1.2.4.tgz'
+trying URL 'https://cran.asia/bin/macosx/big-sur-arm64/contrib/4.5/R.utils_2.13.0.tgz'
+trying URL 'https://cran.asia/bin/macosx/big-sur-arm64/contrib/4.5/stringr_1.6.0.tgz'
+trying URL 'https://bioconductor.org/packages/3.22/bioc/bin/macosx/big-sur-arm64/contrib/4.5/SummarizedExperiment_1.40.0.tgz'
+trying URL 'https://bioconductor.org/packages/3.22/bioc/bin/macosx/big-sur-arm64/contrib/4.5/S4Vectors_0.48.1.tgz'
+trying URL 'https://cran.asia/bin/macosx/big-sur-arm64/contrib/4.5/rvest_1.0.5.tgz'
+trying URL 'https://cran.asia/bin/macosx/big-sur-arm64/contrib/4.5/httr2_1.2.2.tgz'
+trying URL 'https://bioconductor.org/packages/3.22/bioc/bin/macosx/big-sur-arm64/contrib/4.5/BiocVersion_3.22.0.tgz'
+trying URL 'https://bioconductor.org/packages/3.22/bioc/bin/macosx/big-sur-arm64/contrib/4.5/GEOquery_2.78.0.tgz'
+
+The downloaded binary packages are in
+	/var/folders/gc/rtdv9ryn6fq_tw1j1f6ytw8m0000gp/T//RtmpzE36Rl/downloaded_packages
+Old packages: 'Matrix', 'nlme', 'openssl', 'rpart', 'S4Vectors'
+trying URL 'https://cran.asia/bin/macosx/big-sur-arm64/contrib/4.5/Matrix_1.7-5.tgz'
+trying URL 'https://cran.asia/bin/macosx/big-sur-arm64/contrib/4.5/nlme_3.1-169.tgz'
+trying URL 'https://cran.asia/bin/macosx/big-sur-arm64/contrib/4.5/openssl_2.3.5.tgz'
+trying URL 'https://cran.asia/bin/macosx/big-sur-arm64/contrib/4.5/rpart_4.1.27.tgz'
+trying URL 'https://bioconductor.org/packages/3.22/bioc/bin/macosx/big-sur-arm64/contrib/4.5/S4Vectors_0.48.1.tgz'
+
+The downloaded binary packages are in
+	/var/folders/gc/rtdv9ryn6fq_tw1j1f6ytw8m0000gp/T//RtmpzE36Rl/downloaded_packages
+'getOption("repos")' replaces Bioconductor standard repositories, see
+'help("repositories", package = "BiocManager")' for details.
+Replacement repositories:
+    CRAN: https://cran.asia
+Bioconductor version 3.22 (BiocManager 1.30.27), R 4.5.3 (2026-03-11)
+Installing package(s) 'pheatmap'
+also installing the dependencies ‘farver’, ‘labeling’, ‘viridisLite’, ‘RColorBrewer’, ‘scales’, ‘gtable’
+
+trying URL 'https://cran.asia/bin/macosx/big-sur-arm64/contrib/4.5/farver_2.1.2.tgz'
+trying URL 'https://cran.asia/bin/macosx/big-sur-arm64/contrib/4.5/labeling_0.4.3.tgz'
+trying URL 'https://cran.asia/bin/macosx/big-sur-arm64/contrib/4.5/viridisLite_0.4.3.tgz'
+trying URL 'https://cran.asia/bin/macosx/big-sur-arm64/contrib/4.5/RColorBrewer_1.1-3.tgz'
+trying URL 'https://cran.asia/bin/macosx/big-sur-arm64/contrib/4.5/scales_1.4.0.tgz'
+trying URL 'https://cran.asia/bin/macosx/big-sur-arm64/contrib/4.5/gtable_0.3.6.tgz'
+trying URL 'https://cran.asia/bin/macosx/big-sur-arm64/contrib/4.5/pheatmap_1.0.13.tgz'
+
+The downloaded binary packages are in
+	/var/folders/gc/rtdv9ryn6fq_tw1j1f6ytw8m0000gp/T//RtmpzE36Rl/downloaded_packages
+Old packages: 'openssl', 'S4Vectors'
+trying URL 'https://cran.asia/bin/macosx/big-sur-arm64/contrib/4.5/openssl_2.3.5.tgz'
+trying URL 'https://bioconductor.org/packages/3.22/bioc/bin/macosx/big-sur-arm64/contrib/4.5/S4Vectors_0.48.1.tgz'
+
+The downloaded binary packages are in
+	/var/folders/gc/rtdv9ryn6fq_tw1j1f6ytw8m0000gp/T//RtmpzE36Rl/downloaded_packages
+'getOption("repos")' replaces Bioconductor standard repositories, see
+'help("repositories", package = "BiocManager")' for details.
+Replacement repositories:
+    CRAN: https://cran.asia
+Bioconductor version 3.22 (BiocManager 1.30.27), R 4.5.3 (2026-03-11)
+Installing package(s) 'ggplot2'
+also installing the dependencies ‘isoband’, ‘S7’
+
+trying URL 'https://cran.asia/bin/macosx/big-sur-arm64/contrib/4.5/isoband_0.3.0.tgz'
+trying URL 'https://cran.asia/bin/macosx/big-sur-arm64/contrib/4.5/S7_0.2.1.tgz'
+trying URL 'https://cran.asia/bin/macosx/big-sur-arm64/contrib/4.5/ggplot2_4.0.2.tgz'
+
+The downloaded binary packages are in
+	/var/folders/gc/rtdv9ryn6fq_tw1j1f6ytw8m0000gp/T//RtmpzE36Rl/downloaded_packages
+Old packages: 'openssl', 'S4Vectors', 'S7'
+trying URL 'https://cran.asia/bin/macosx/big-sur-arm64/contrib/4.5/openssl_2.3.5.tgz'
+trying URL 'https://bioconductor.org/packages/3.22/bioc/bin/macosx/big-sur-arm64/contrib/4.5/S4Vectors_0.48.1.tgz'
+trying URL 'https://cran.asia/bin/macosx/big-sur-arm64/contrib/4.5/S7_0.2.1.tgz'
+
+The downloaded binary packages are in
+	/var/folders/gc/rtdv9ryn6fq_tw1j1f6ytw8m0000gp/T//RtmpzE36Rl/downloaded_packages
+'getOption("repos")' replaces Bioconductor standard repositories, see
+'help("repositories", package = "BiocManager")' for details.
+Replacement repositories:
+    CRAN: https://cran.asia
+Bioconductor version 3.22 (BiocManager 1.30.27), R 4.5.3 (2026-03-11)
+Installing package(s) 'ggrepel'
+also installing the dependency ‘Rcpp’
+
+trying URL 'https://cran.asia/bin/macosx/big-sur-arm64/contrib/4.5/Rcpp_1.1.1.tgz'
+trying URL 'https://cran.asia/bin/macosx/big-sur-arm64/contrib/4.5/ggrepel_0.9.8.tgz'
+
+The downloaded binary packages are in
+	/var/folders/gc/rtdv9ryn6fq_tw1j1f6ytw8m0000gp/T//RtmpzE36Rl/downloaded_packages
+Old packages: 'openssl', 'Rcpp', 'S4Vectors', 'S7'
+trying URL 'https://cran.asia/bin/macosx/big-sur-arm64/contrib/4.5/openssl_2.3.5.tgz'
+trying URL 'https://cran.asia/bin/macosx/big-sur-arm64/contrib/4.5/Rcpp_1.1.1.tgz'
+trying URL 'https://bioconductor.org/packages/3.22/bioc/bin/macosx/big-sur-arm64/contrib/4.5/S4Vectors_0.48.1.tgz'
+trying URL 'https://cran.asia/bin/macosx/big-sur-arm64/contrib/4.5/S7_0.2.1.tgz'
+
+The downloaded binary packages are in
+	/var/folders/gc/rtdv9ryn6fq_tw1j1f6ytw8m0000gp/T//RtmpzE36Rl/downloaded_packages
+'getOption("repos")' replaces Bioconductor standard repositories, see
+'help("repositories", package = "BiocManager")' for details.
+Replacement repositories:
+    CRAN: https://cran.asia
+Bioconductor version 3.22 (BiocManager 1.30.27), R 4.5.3 (2026-03-11)
+Installing package(s) 'clusterProfiler'
+also installing the dependencies ‘sass’, ‘fontBitstreamVera’, ‘fontLiberation’, ‘evaluate’, ‘highr’, ‘xfun’, ‘bslib’, ‘fontawesome’, ‘jquerylib’, ‘tinytex’, ‘fastmap’, ‘formatR’, ‘base64enc’, ‘fontquiver’, ‘knitr’, ‘rmarkdown’, ‘yaml’, ‘cachem’, ‘lambda.r’, ‘futile.options’, ‘gridGraphics’, ‘tweenr’, ‘polyclip’, ‘systemfonts’, ‘lazyeval’, ‘gdtools’, ‘htmltools’, ‘htmlwidgets’, ‘blob’, ‘memoise’, ‘png’, ‘Biostrings’, ‘futile.logger’, ‘snow’, ‘BH’, ‘cowplot’, ‘fastmatch’, ‘ggplotify’, ‘patchwork’, ‘ggforce’, ‘ape’, ‘tidytree’, ‘treeio’, ‘ggiraph’, ‘DBI’, ‘RSQLite’, ‘KEGGREST’, ‘BiocParallel’, ‘fgsea’, ‘reshape2’, ‘aplot’, ‘ggfun’, ‘ggnewscale’, ‘ggtangle’, ‘tidydr’, ‘scatterpie’, ‘ggtree’, ‘digest’, ‘fs’, ‘AnnotationDbi’, ‘DOSE’, ‘enrichplot’, ‘GO.db’, ‘GOSemSim’, ‘gson’, ‘igraph’, ‘plyr’, ‘qvalue’, ‘yulab.utils’
+
+trying URL 'https://cran.asia/bin/macosx/big-sur-arm64/contrib/4.5/sass_0.4.10.tgz'
+trying URL 'https://cran.asia/bin/macosx/big-sur-arm64/contrib/4.5/fontBitstreamVera_0.1.1.tgz'
+trying URL 'https://cran.asia/bin/macosx/big-sur-arm64/contrib/4.5/fontLiberation_0.1.0.tgz'
+trying URL 'https://cran.asia/bin/macosx/big-sur-arm64/contrib/4.5/evaluate_1.0.5.tgz'
+trying URL 'https://cran.asia/bin/macosx/big-sur-arm64/contrib/4.5/highr_0.12.tgz'
+trying URL 'https://cran.asia/bin/macosx/big-sur-arm64/contrib/4.5/xfun_0.57.tgz'
+trying URL 'https://cran.asia/bin/macosx/big-sur-arm64/contrib/4.5/bslib_0.10.0.tgz'
+trying URL 'https://cran.asia/bin/macosx/big-sur-arm64/contrib/4.5/fontawesome_0.5.3.tgz'
+trying URL 'https://cran.asia/bin/macosx/big-sur-arm64/contrib/4.5/jquerylib_0.1.4.tgz'
+trying URL 'https://cran.asia/bin/macosx/big-sur-arm64/contrib/4.5/tinytex_0.59.tgz'
+trying URL 'https://cran.asia/bin/macosx/big-sur-arm64/contrib/4.5/fastmap_1.2.0.tgz'
+trying URL 'https://cran.asia/bin/macosx/big-sur-arm64/contrib/4.5/formatR_1.14.tgz'
+trying URL 'https://cran.asia/bin/macosx/big-sur-arm64/contrib/4.5/base64enc_0.1-6.tgz'
+trying URL 'https://cran.asia/bin/macosx/big-sur-arm64/contrib/4.5/fontquiver_0.2.1.tgz'
+trying URL 'https://cran.asia/bin/macosx/big-sur-arm64/contrib/4.5/knitr_1.51.tgz'
+trying URL 'https://cran.asia/bin/macosx/big-sur-arm64/contrib/4.5/rmarkdown_2.31.tgz'
+trying URL 'https://cran.asia/bin/macosx/big-sur-arm64/contrib/4.5/yaml_2.3.12.tgz'
+trying URL 'https://cran.asia/bin/macosx/big-sur-arm64/contrib/4.5/cachem_1.1.0.tgz'
+trying URL 'https://cran.asia/bin/macosx/big-sur-arm64/contrib/4.5/lambda.r_1.2.4.tgz'
+trying URL 'https://cran.asia/bin/macosx/big-sur-arm64/contrib/4.5/futile.options_1.0.1.tgz'
+trying URL 'https://cran.asia/bin/macosx/big-sur-arm64/contrib/4.5/gridGraphics_0.5-1.tgz'
+trying URL 'https://cran.asia/bin/macosx/big-sur-arm64/contrib/4.5/tweenr_2.0.3.tgz'
+trying URL 'https://cran.asia/bin/macosx/big-sur-arm64/contrib/4.5/polyclip_1.10-7.tgz'
+trying URL 'https://cran.asia/bin/macosx/big-sur-arm64/contrib/4.5/systemfonts_1.3.2.tgz'
+trying URL 'https://cran.asia/bin/macosx/big-sur-arm64/contrib/4.5/lazyeval_0.2.3.tgz'
+trying URL 'https://cran.asia/bin/macosx/big-sur-arm64/contrib/4.5/gdtools_0.5.0.tgz'
+trying URL 'https://cran.asia/bin/macosx/big-sur-arm64/contrib/4.5/htmltools_0.5.9.tgz'
+trying URL 'https://cran.asia/bin/macosx/big-sur-arm64/contrib/4.5/htmlwidgets_1.6.4.tgz'
+trying URL 'https://cran.asia/bin/macosx/big-sur-arm64/contrib/4.5/blob_1.3.0.tgz'
+trying URL 'https://cran.asia/bin/macosx/big-sur-arm64/contrib/4.5/memoise_2.0.1.tgz'
+trying URL 'https://cran.asia/bin/macosx/big-sur-arm64/contrib/4.5/png_0.1-9.tgz'
+trying URL 'https://bioconductor.org/packages/3.22/bioc/bin/macosx/big-sur-arm64/contrib/4.5/Biostrings_2.78.0.tgz'
+trying URL 'https://cran.asia/bin/macosx/big-sur-arm64/contrib/4.5/futile.logger_1.4.9.tgz'
+trying URL 'https://cran.asia/bin/macosx/big-sur-arm64/contrib/4.5/snow_0.4-4.tgz'
+trying URL 'https://cran.asia/bin/macosx/big-sur-arm64/contrib/4.5/BH_1.90.0-1.tgz'
+trying URL 'https://cran.asia/bin/macosx/big-sur-arm64/contrib/4.5/cowplot_1.2.0.tgz'
+trying URL 'https://cran.asia/bin/macosx/big-sur-arm64/contrib/4.5/fastmatch_1.1-8.tgz'
+trying URL 'https://cran.asia/bin/macosx/big-sur-arm64/contrib/4.5/ggplotify_0.1.3.tgz'
+trying URL 'https://cran.asia/bin/macosx/big-sur-arm64/contrib/4.5/patchwork_1.3.2.tgz'
+trying URL 'https://cran.asia/bin/macosx/big-sur-arm64/contrib/4.5/ggforce_0.5.0.tgz'
+trying URL 'https://cran.asia/bin/macosx/big-sur-arm64/contrib/4.5/ape_5.8-1.tgz'
+trying URL 'https://cran.asia/bin/macosx/big-sur-arm64/contrib/4.5/tidytree_0.4.7.tgz'
+trying URL 'https://bioconductor.org/packages/3.22/bioc/bin/macosx/big-sur-arm64/contrib/4.5/treeio_1.34.0.tgz'
+trying URL 'https://cran.asia/bin/macosx/big-sur-arm64/contrib/4.5/ggiraph_0.9.6.tgz'
+trying URL 'https://cran.asia/bin/macosx/big-sur-arm64/contrib/4.5/DBI_1.3.0.tgz'
+trying URL 'https://cran.asia/bin/macosx/big-sur-arm64/contrib/4.5/RSQLite_2.4.6.tgz'
+trying URL 'https://bioconductor.org/packages/3.22/bioc/bin/macosx/big-sur-arm64/contrib/4.5/KEGGREST_1.50.0.tgz'
+trying URL 'https://bioconductor.org/packages/3.22/bioc/bin/macosx/big-sur-arm64/contrib/4.5/BiocParallel_1.44.0.tgz'
+trying URL 'https://bioconductor.org/packages/3.22/bioc/bin/macosx/big-sur-arm64/contrib/4.5/fgsea_1.36.2.tgz'
+trying URL 'https://cran.asia/bin/macosx/big-sur-arm64/contrib/4.5/reshape2_1.4.5.tgz'
+trying URL 'https://cran.asia/bin/macosx/big-sur-arm64/contrib/4.5/aplot_0.2.9.tgz'
+trying URL 'https://cran.asia/bin/macosx/big-sur-arm64/contrib/4.5/ggfun_0.2.0.tgz'
+trying URL 'https://cran.asia/bin/macosx/big-sur-arm64/contrib/4.5/ggnewscale_0.5.2.tgz'
+trying URL 'https://cran.asia/bin/macosx/big-sur-arm64/contrib/4.5/ggtangle_0.1.1.tgz'
+trying URL 'https://cran.asia/bin/macosx/big-sur-arm64/contrib/4.5/tidydr_0.0.6.tgz'
+trying URL 'https://cran.asia/bin/macosx/big-sur-arm64/contrib/4.5/scatterpie_0.2.6.tgz'
+trying URL 'https://bioconductor.org/packages/3.22/bioc/bin/macosx/big-sur-arm64/contrib/4.5/ggtree_4.0.5.tgz'
+trying URL 'https://cran.asia/bin/macosx/big-sur-arm64/contrib/4.5/digest_0.6.39.tgz'
+trying URL 'https://cran.asia/bin/macosx/big-sur-arm64/contrib/4.5/fs_2.0.1.tgz'
+trying URL 'https://bioconductor.org/packages/3.22/bioc/bin/macosx/big-sur-arm64/contrib/4.5/AnnotationDbi_1.72.0.tgz'
+trying URL 'https://bioconductor.org/packages/3.22/bioc/bin/macosx/big-sur-arm64/contrib/4.5/DOSE_4.4.0.tgz'
+trying URL 'https://bioconductor.org/packages/3.22/bioc/bin/macosx/big-sur-arm64/contrib/4.5/enrichplot_1.30.5.tgz'
+trying URL 'https://bioconductor.org/packages/3.22/bioc/bin/macosx/big-sur-arm64/contrib/4.5/GOSemSim_2.36.0.tgz'
+trying URL 'https://cran.asia/bin/macosx/big-sur-arm64/contrib/4.5/gson_0.1.0.tgz'
+trying URL 'https://cran.asia/bin/macosx/big-sur-arm64/contrib/4.5/igraph_2.2.3.tgz'
+trying URL 'https://cran.asia/bin/macosx/big-sur-arm64/contrib/4.5/plyr_1.8.9.tgz'
+trying URL 'https://bioconductor.org/packages/3.22/bioc/bin/macosx/big-sur-arm64/contrib/4.5/qvalue_2.42.0.tgz'
+trying URL 'https://cran.asia/bin/macosx/big-sur-arm64/contrib/4.5/yulab.utils_0.2.4.tgz'
+trying URL 'https://bioconductor.org/packages/3.22/bioc/bin/macosx/big-sur-arm64/contrib/4.5/clusterProfiler_4.18.4.tgz'
+
+The downloaded binary packages are in
+	/var/folders/gc/rtdv9ryn6fq_tw1j1f6ytw8m0000gp/T//RtmpzE36Rl/downloaded_packages
+installing the source package ‘GO.db’
+
+trying URL 'https://bioconductor.org/packages/3.22/data/annotation/src/contrib/GO.db_3.22.0.tar.gz'
+Content type 'application/x-gzip' length 25248437 bytes (24.1 MB)
+==================================================
+downloaded 24.1 MB
+
+
+The downloaded source packages are in
+	‘/private/var/folders/gc/rtdv9ryn6fq_tw1j1f6ytw8m0000gp/T/RtmpzE36Rl/downloaded_packages’
+Old packages: 'openssl', 'Rcpp', 'S4Vectors', 'S7'
+trying URL 'https://cran.asia/bin/macosx/big-sur-arm64/contrib/4.5/openssl_2.3.5.tgz'
+trying URL 'https://cran.asia/bin/macosx/big-sur-arm64/contrib/4.5/Rcpp_1.1.1.tgz'
+trying URL 'https://bioconductor.org/packages/3.22/bioc/bin/macosx/big-sur-arm64/contrib/4.5/S4Vectors_0.48.1.tgz'
+trying URL 'https://cran.asia/bin/macosx/big-sur-arm64/contrib/4.5/S7_0.2.1.tgz'
+
+The downloaded binary packages are in
+	/var/folders/gc/rtdv9ryn6fq_tw1j1f6ytw8m0000gp/T//RtmpzE36Rl/downloaded_packages
+'getOption("repos")' replaces Bioconductor standard repositories, see
+'help("repositories", package = "BiocManager")' for details.
+Replacement repositories:
+    CRAN: https://cran.asia
+Bioconductor version 3.22 (BiocManager 1.30.27), R 4.5.3 (2026-03-11)
+Installing package(s) 'org.Hs.eg.db'
+installing the source package ‘org.Hs.eg.db’
+
+trying URL 'https://bioconductor.org/packages/3.22/data/annotation/src/contrib/org.Hs.eg.db_3.22.0.tar.gz'
+Content type 'application/x-gzip' length 104968958 bytes (100.1 MB)
+==================================================
+downloaded 100.1 MB
+
+
+The downloaded source packages are in
+	‘/private/var/folders/gc/rtdv9ryn6fq_tw1j1f6ytw8m0000gp/T/RtmpzE36Rl/downloaded_packages’
+Old packages: 'openssl', 'Rcpp', 'S4Vectors', 'S7'
+trying URL 'https://cran.asia/bin/macosx/big-sur-arm64/contrib/4.5/openssl_2.3.5.tgz'
+trying URL 'https://cran.asia/bin/macosx/big-sur-arm64/contrib/4.5/Rcpp_1.1.1.tgz'
+trying URL 'https://bioconductor.org/packages/3.22/bioc/bin/macosx/big-sur-arm64/contrib/4.5/S4Vectors_0.48.1.tgz'
+trying URL 'https://cran.asia/bin/macosx/big-sur-arm64/contrib/4.5/S7_0.2.1.tgz'
+
+The downloaded binary packages are in
+	/var/folders/gc/rtdv9ryn6fq_tw1j1f6ytw8m0000gp/T//RtmpzE36Rl/downloaded_packages
+'getOption("repos")' replaces Bioconductor standard repositories, see
+'help("repositories", package = "BiocManager")' for details.
+Replacement repositories:
+    CRAN: https://cran.asia
+Bioconductor version 3.22 (BiocManager 1.30.27), R 4.5.3 (2026-03-11)
+Installing package(s) 'pROC'
+trying URL 'https://cran.asia/bin/macosx/big-sur-arm64/contrib/4.5/pROC_1.19.0.1.tgz'
+Content type 'application/octet-stream' length 1085571 bytes (1.0 MB)
+==================================================
+downloaded 1.0 MB
+
+
+The downloaded binary packages are in
+	/var/folders/gc/rtdv9ryn6fq_tw1j1f6ytw8m0000gp/T//RtmpzE36Rl/downloaded_packages
+Old packages: 'openssl', 'Rcpp', 'S4Vectors', 'S7'
+trying URL 'https://cran.asia/bin/macosx/big-sur-arm64/contrib/4.5/openssl_2.3.5.tgz'
+trying URL 'https://cran.asia/bin/macosx/big-sur-arm64/contrib/4.5/Rcpp_1.1.1.tgz'
+trying URL 'https://bioconductor.org/packages/3.22/bioc/bin/macosx/big-sur-arm64/contrib/4.5/S4Vectors_0.48.1.tgz'
+trying URL 'https://cran.asia/bin/macosx/big-sur-arm64/contrib/4.5/S7_0.2.1.tgz'
+
+The downloaded binary packages are in
+	/var/folders/gc/rtdv9ryn6fq_tw1j1f6ytw8m0000gp/T//RtmpzE36Rl/downloaded_packages
+> 
+> library(GEOquery);      library(limma)
+Loading required package: Biobase
+Loading required package: BiocGenerics
+Loading required package: generics
+
+Attaching package: ‘generics’
+
+The following objects are masked from ‘package:base’:
+
+    as.difftime, as.factor, as.ordered, intersect, is.element, setdiff,
+    setequal, union
+
+
+Attaching package: ‘BiocGenerics’
+
+The following objects are masked from ‘package:stats’:
+
+    IQR, mad, sd, var, xtabs
+
+The following objects are masked from ‘package:base’:
+
+    anyDuplicated, aperm, append, as.data.frame, basename, cbind, colnames,
+    dirname, do.call, duplicated, eval, evalq, Filter, Find, get, grep, grepl,
+    is.unsorted, lapply, Map, mapply, match, mget, order, paste, pmax,
+    pmax.int, pmin, pmin.int, Position, rank, rbind, Reduce, rownames, sapply,
+    saveRDS, table, tapply, unique, unsplit, which.max, which.min
+
+Welcome to Bioconductor
+
+    Vignettes contain introductory material; view with 'browseVignettes()'. To
+    cite Bioconductor, see 'citation("Biobase")', and for packages
+    'citation("pkgname")'.
+
+Setting options('download.file.method.GEOquery'='auto')
+Setting options('GEOquery.inmemory.gpl'=FALSE)
+
+Attaching package: ‘limma’
+
+The following object is masked from ‘package:BiocGenerics’:
+
+    plotMA
+
+> library(pheatmap);      library(ggplot2)
+> library(ggrepel);       library(clusterProfiler)
+clusterProfiler v4.18.4 Learn more at https://yulab-smu.top/contribution-knowledge-mining/
+
+Please cite:
+
+S Xu, E Hu, Y Cai, Z Xie, X Luo, L Zhan, W Tang, Q Wang, B Liu, R Wang, W Xie,
+T Wu, L Xie, G Yu. Using clusterProfiler to characterize multiomics data.
+Nature Protocols. 2024, 19(11):3292-3320
+
+Attaching package: ‘clusterProfiler’
+
+The following object is masked from ‘package:stats’:
+
+    filter
+
+> library(org.Hs.eg.db);  library(enrichplot)
+Loading required package: AnnotationDbi
+Loading required package: stats4
+Loading required package: IRanges
+Loading required package: S4Vectors
+
+Attaching package: ‘S4Vectors’
+
+The following object is masked from ‘package:clusterProfiler’:
+
+    rename
+
+The following object is masked from ‘package:utils’:
+
+    findMatches
+
+The following objects are masked from ‘package:base’:
+
+    expand.grid, I, unname
+
+
+Attaching package: ‘IRanges’
+
+The following object is masked from ‘package:clusterProfiler’:
+
+    slice
+
+
+Attaching package: ‘AnnotationDbi’
+
+The following object is masked from ‘package:clusterProfiler’:
+
+    select
+
+
+enrichplot v1.30.5 Learn more at https://yulab-smu.top/contribution-knowledge-mining/
+
+Please cite:
+
+Qianwen Wang, Ming Li, Tianzhi Wu, Li Zhan, Lin Li, Meijun Chen, Wenqin Xie,
+Zijing Xie, Erqiang Hu, Shuangbin Xu, Guangchuang Yu. Exploring epigenomic
+datasets by ChIPseeker. Current Protocols. 2022, 2(10): e585
+> library(pROC);          library(dplyr)
+Type 'citation("pROC")' for a citation.
+
+Attaching package: ‘pROC’
+
+The following objects are masked from ‘package:IRanges’:
+
+    cov, var
+
+The following objects are masked from ‘package:S4Vectors’:
+
+    cov, var
+
+The following object is masked from ‘package:BiocGenerics’:
+
+    var
+
+The following objects are masked from ‘package:stats’:
+
+    cov, smooth, var
+
+
+Attaching package: ‘dplyr’
+
+The following object is masked from ‘package:AnnotationDbi’:
+
+    select
+
+The following objects are masked from ‘package:IRanges’:
+
+    collapse, desc, intersect, setdiff, slice, union
+
+The following objects are masked from ‘package:S4Vectors’:
+
+    first, intersect, rename, setdiff, setequal, union
+
+The following object is masked from ‘package:Biobase’:
+
+    combine
+
+The following objects are masked from ‘package:BiocGenerics’:
+
+    combine, intersect, setdiff, setequal, union
+
+The following object is masked from ‘package:generics’:
+
+    explain
+
+The following objects are masked from ‘package:stats’:
+
+    filter, lag
+
+The following objects are masked from ‘package:base’:
+
+    intersect, setdiff, setequal, union
+
+> library(RColorBrewer)
+> 
+> 
+> # ---- 2. Download & load GSE44076 ---------------------------
+> cat("Downloading GSE44076 (this may take a few minutes)...\n")
+Downloading GSE44076 (this may take a few minutes)...
+> gse <- getGEO("GSE44076", GSEMatrix = TRUE, AnnotGPL = TRUE)
+Found 1 file(s)
+GSE44076_series_matrix.txt.gz
+Annotation GPL not available, so will use submitter GPL instead
+> eset <- gse[[1]]
+> 
+> expr   <- exprs(eset)                          # 49386 x 246
+> pdata  <- pData(eset)
+> fdata  <- fData(eset)
+> 
+> 
+> # ---- 3. Label samples (Normal vs Tumor) --------------------
+> source_col <- grep("source_name", colnames(pdata), value = TRUE)[1]
+> sources    <- tolower(pdata[[source_col]])
+> 
+> labels <- ifelse(grepl("normal distant", sources), "Normal",
++           ifelse(grepl("adenocarcinoma|tumor", sources), "Tumor", NA))
+> 
+> keep   <- !is.na(labels)
+> expr   <- expr[, keep]
+> labels <- labels[keep]
+> pdata  <- pdata[keep, ]
+> 
+> cat(sprintf("Kept %d samples: %d Normal, %d Tumor\n",
++     ncol(expr), sum(labels == "Normal"), sum(labels == "Tumor")))
+Kept 196 samples: 98 Normal, 98 Tumor
+> 
+> 
+> # ---- 4. Differential expression with limma -----------------
+> design <- model.matrix(~ 0 + factor(labels))
+> colnames(design) <- c("Normal", "Tumor")
+> contrast <- makeContrasts(Tumor - Normal, levels = design)
+> 
+> fit  <- lmFit(expr, design)
+> fit2 <- contrasts.fit(fit, contrast)
+> fit2 <- eBayes(fit2)
+> 
+> deg_all <- topTable(fit2, number = Inf, adjust.method = "BH")
+> deg_all$probe_id <- rownames(deg_all)
+> 
+> # Map probe IDs to gene symbols via fdata
+> if ("Gene Symbol" %in% colnames(fdata)) {
++   sym_col <- "Gene Symbol"
++ } else if ("GENE_SYMBOL" %in% colnames(fdata)) {
++   sym_col <- "GENE_SYMBOL"
++ } else {
++   sym_col <- colnames(fdata)[grep("symbol|gene", colnames(fdata), ignore.case=TRUE)[1]]
++ }
+> 
+> deg_all$symbol <- fdata[rownames(deg_all), sym_col]
+> deg_all$symbol[is.na(deg_all$symbol) | deg_all$symbol == ""] <- deg_all$probe_id[
++   is.na(deg_all$symbol) | deg_all$symbol == ""]
+> 
+> # Significant DEGs: adj.P.Val < 0.05 and |logFC| >= 1
+> sig <- deg_all %>% filter(adj.P.Val < 0.05, abs(logFC) >= 1)
+> cat(sprintf("Significant DEGs: %d\n", nrow(sig)))
+Significant DEGs: 4446
+> 
+> 
+> # ---- 5. VOLCANO PLOT ----------------------------------------
+> cat("Plotting volcano...\n")
+Plotting volcano...
+> 
+> deg_all$color <- "Not significant"
+> deg_all$color[deg_all$adj.P.Val < 0.05 & deg_all$logFC >  1] <- "Up in tumor"
+> deg_all$color[deg_all$adj.P.Val < 0.05 & deg_all$logFC < -1] <- "Down in tumor"
+> 
+> top_labels <- deg_all %>%
++   filter(color != "Not significant") %>%
++   arrange(adj.P.Val) %>%
++   head(20)
+> 
+> ggplot(deg_all, aes(x = logFC, y = -log10(adj.P.Val), color = color)) +
++   geom_point(size = 1, alpha = 0.7) +
++   geom_point(data = top_labels, size = 2) +
++   geom_text_repel(data = top_labels, aes(label = symbol),
++                   size = 2.8, max.overlaps = 15,
++                   box.padding = 0.3, show.legend = FALSE) +
++   geom_vline(xintercept = c(-1, 1),  linetype = "dashed", color = "grey50") +
++   geom_hline(yintercept = -log10(0.05), linetype = "dashed", color = "grey50") +
++   scale_color_manual(values = c("Up in tumor"      = "#ef4444",
++                                 "Down in tumor"    = "#22c55e",
++                                 "Not significant"  = "#94a3b8")) +
++   labs(title    = "Volcano Plot — Tumor vs Normal (GSE44076)",
++        x        = "log2 Fold Change",
++        y        = "-log10(adj. P-value)",
++        color    = "") +
++   theme_bw(base_size = 12) +
++   theme(plot.title   = element_text(hjust = 0.5, face = "bold"),
++         legend.position = "top")
+> 
+> ggsave("volcano_plot.png", width = 8, height = 6, dpi = 150)
+> cat("Saved: volcano_plot.png\n")
+Saved: volcano_plot.png
+> 
+> 
+> # ---- 6. HEATMAP ---------------------------------------------
+> cat("Plotting heatmap...\n")
+Plotting heatmap...
+> 
+> top50_probes <- head(rownames(deg_all[order(deg_all$adj.P.Val), ]), 50)
+> expr_top50   <- expr[top50_probes, ]
+> rownames(expr_top50) <- deg_all[top50_probes, "symbol"]
+> 
+> ann_col <- data.frame(Type = labels)
+> rownames(ann_col) <- colnames(expr_top50)
+> 
+> ann_colors <- list(Type = c(Normal = "#22c55e", Tumor = "#ef4444"))
+> 
+> pheatmap(expr_top50,
++          scale            = "row",
++          annotation_col   = ann_col,
++          annotation_colors= ann_colors,
++          show_colnames    = FALSE,
++          fontsize_row     = 7,
++          color            = colorRampPalette(rev(brewer.pal(11, "RdBu")))(100),
++          main             = "Heatmap — Top 50 DEGs (GSE44076)",
++          filename         = "heatmap.png",
++          width            = 10, height = 8)
+> 
+> cat("Saved: heatmap.png\n")
+Saved: heatmap.png
+> 
+> 
+> # ---- 7. GO ENRICHMENT ---------------------------------------
+> cat("Running GO enrichment...\n")
+Running GO enrichment...
+> 
+> sig_symbols <- unique(sig$symbol)
+> sig_symbols  <- sig_symbols[sig_symbols != "" & !is.na(sig_symbols)]
+> 
+> gene_map <- bitr(sig_symbols,
++                  fromType = "SYMBOL",
++                  toType   = "ENTREZID",
++                  OrgDb    = org.Hs.eg.db)
+'select()' returned 1:1 mapping between keys and columns
+Warning message:
+In bitr(sig_symbols, fromType = "SYMBOL", toType = "ENTREZID", OrgDb = org.Hs.eg.db) :
+  14.17% of input gene IDs are fail to map...
+> 
+> entrez_ids <- unique(gene_map$ENTREZID)
+> 
+> ego <- enrichGO(gene          = entrez_ids,
++                 OrgDb         = org.Hs.eg.db,
++                 ont           = "BP",
++                 pAdjustMethod = "BH",
++                 pvalueCutoff  = 0.05,
++                 qvalueCutoff  = 0.05,
++                 readable      = TRUE)
+> 
+> if (!is.null(ego) && nrow(ego) > 0) {
++   p <- dotplot(ego, showCategory = 15) +
++     ggtitle("GO Enrichment — Biological Processes") +
++     theme(plot.title = element_text(hjust = 0.5, face = "bold"))
++   ggsave("go_enrichment.png", plot = p, width = 9, height = 7, dpi = 150)
++   cat("Saved: go_enrichment.png\n")
++ } else {
++   cat("No significant GO terms found — try relaxing pvalueCutoff.\n")
++ }
+Saved: go_enrichment.png
+> 
+> 
+> # ---- 8. KEGG PATHWAY ----------------------------------------
+> cat("Running KEGG enrichment...\n")
+Running KEGG enrichment...
+> 
+> ekegg <- enrichKEGG(gene         = entrez_ids,
++                     organism     = "hsa",
++                     pvalueCutoff = 0.10)
+Reading KEGG annotation online: "https://rest.kegg.jp/link/hsa/pathway"...
+Reading KEGG annotation online: "https://rest.kegg.jp/list/pathway/hsa"...
+kegg_category.rda is not found, download it online...
+
+> 
+> if (!is.null(ekegg) && nrow(ekegg) > 0) {
++   p2 <- dotplot(ekegg, showCategory = 12) +
++     ggtitle("KEGG Pathway Enrichment") +
++     theme(plot.title = element_text(hjust = 0.5, face = "bold"))
++   ggsave("kegg_enrichment.png", plot = p2, width = 9, height = 7, dpi = 150)
++   cat("Saved: kegg_enrichment.png\n")
++ } else {
++   cat("No significant KEGG pathways found — try relaxing pvalueCutoff.\n")
++ }
+Error: object 'ekegg' not found
+> 
+> 
+> # ---- 9. PCA PLOT --------------------------------------------
+> cat("Plotting PCA...\n")
+Plotting PCA...
+> 
+> pca_res <- prcomp(t(expr), scale. = TRUE)
+> pca_df  <- data.frame(
++   PC1  = pca_res$x[, 1],
++   PC2  = pca_res$x[, 2],
++   Type = labels
++ )
+> 
+> var_exp <- round(summary(pca_res)$importance[2, 1:2] * 100, 1)
+> 
+> ggplot(pca_df, aes(x = PC1, y = PC2, color = Type)) +
++   geom_point(size = 3, alpha = 0.85) +
++   scale_color_manual(values = c(Normal = "#22c55e", Tumor = "#ef4444")) +
++   stat_ellipse(level = 0.90, linetype = "dashed", linewidth = 0.6) +
++   labs(title = "PCA — Colon Cancer vs Normal (GSE44076)",
++        x     = paste0("PC1 (", var_exp[1], "% variance)"),
++        y     = paste0("PC2 (", var_exp[2], "% variance)"),
++        color = "") +
++   theme_bw(base_size = 12) +
++   theme(plot.title    = element_text(hjust = 0.5, face = "bold"),
++         legend.position = "top")
+> 
+> ggsave("pca_plot.png", width = 7, height = 5, dpi = 150)
+> cat("Saved: pca_plot.png\n")
+Saved: pca_plot.png
+> 
+> 
+> # ---- 10. ROC CURVE ------------------------------------------
+> cat("Plotting ROC curve...\n")
+Plotting ROC curve...
+> 
+> # Use top DEG logFC as a simple score for ROC demonstration
+> top_probe  <- rownames(deg_all)[1]
+> scores     <- as.numeric(expr[top_probe, ])
+> true_labels <- ifelse(labels == "Tumor", 1, 0)
+> 
+> roc_obj <- roc(true_labels, scores, quiet = TRUE)
+> roc_df  <- data.frame(
++   FPR = 1 - roc_obj$specificities,
++   TPR = roc_obj$sensitivities
++ )
+> 
+> ggplot(roc_df, aes(x = FPR, y = TPR)) +
++   geom_line(color = "#00e5ff", linewidth = 1.5) +
++   geom_ribbon(aes(ymin = 0, ymax = TPR), fill = "#00e5ff", alpha = 0.08) +
++   geom_abline(slope = 1, intercept = 0, linetype = "dashed", color = "grey50") +
++   annotate("text", x = 0.65, y = 0.15,
++            label = paste0("AUC = ", round(auc(roc_obj), 3)),
++            size = 5, color = "#00e5ff", fontface = "bold") +
++   labs(title = paste0("ROC Curve — ", deg_all[top_probe, "symbol"]),
++        x     = "False Positive Rate",
++        y     = "True Positive Rate") +
++   theme_bw(base_size = 12) +
++   theme(plot.title = element_text(hjust = 0.5, face = "bold"))
+> 
+> ggsave("roc_curve.png", width = 6, height = 5, dpi = 150)
+> cat("Saved: roc_curve.png\n")
+Saved: roc_curve.png
+> 
+> 
+> cat("\n=== Done! All plots saved to your working directory ===\n")
+
+=== Done! All plots saved to your working directory ===
+> cat("Files: volcano_plot.png, heatmap.png, go_enrichment.png,\n")
+Files: volcano_plot.png, heatmap.png, go_enrichment.png,
+> cat("       kegg_enrichment.png, pca_plot.png, roc_curve.png\n")
+       kegg_enrichment.png, pca_plot.png, roc_curve.png
+> 
